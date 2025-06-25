@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Rosemount City Law Chatbot</title>
+  <link rel="stylesheet" href="https://unpkg.com/botui/build/botui.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/botui/build/botui-theme-default.css">
+</head>
+<body>
+  <h2>City Ordinance Chatbot 🤖</h2>
+  <div id="botui-app">
+    <bot-ui></bot-ui>
+  </div>
+
+  <script src="https://unpkg.com/vue"></script>
+  <script src="https://unpkg.com/botui/build/botui.min.js"></script>
+  <script>
+    var botui = new BotUI('botui-app');
+    botui.message.add({ content: 'Hello! Ask me anything about Rosemount city laws.' }).then(askUser);
+    function askUser() {
+      botui.action.text({
+        action: { placeholder: 'Type your question...' }
+      }).then(function (res) {
+        botui.message.add({ loading: true }).then(function (index) {
+          fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: res.value })
+          })
+          .then(r => r.json())
+          .then(data => {
+            botui.message.update(index, { content: data.response });
+            askUser();
+          });
+        });
+      });
+    }
+  </script>
+</body>
+</html>
